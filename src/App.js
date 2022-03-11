@@ -67,9 +67,22 @@ export default function App() {
   // }
   // getSortedData(data, sortBy);
 
-  const [{ sortBy }, dispatch] = useReducer(
+  const [
+    { showInventoryAll, showFastDeliveryOnly, sortBy },
+    dispatch
+  ] = useReducer(
     function reducer(state, action) {
       switch (action.type) {
+        case "TOGGLE_INVENTORY":
+          return {
+            ...state,
+            showInventoryAll: !showInventoryAll
+          };
+        case "TOGGLE_DELIVERY":
+          return {
+            ...state,
+            showFastDeliveryOnly: !showFastDeliveryOnly
+          };
         case "SORT":
           return {
             ...state,
@@ -94,7 +107,13 @@ export default function App() {
     }
   }
 
-  getSortedData(data, sortBy);
+  function getFilteredData(productList, { showInventoryAll, fastDelivery }) {}
+
+  const sortedData = getSortedData(data, sortBy);
+  const filteredData = getFilteredData(sortedData, {
+    showInventoryAll,
+    showFastDeliveryOnly
+  });
 
   return (
     <>
@@ -125,10 +144,20 @@ export default function App() {
       <fieldset style={{ marginTop: "1rem" }}>
         <legend>Filters</legend>
         <label>
-          <input type="checkbox"></input>Include Out of Stock
+          <input
+            type="checkbox"
+            checked={showInventoryAll}
+            onChange={() => dispatch({ type: "TOGGLE_INVENTORY" })}
+          ></input>
+          Include Out of Stock
         </label>
         <label>
-          <input type="checkbox"></input>Fast Delivery Only
+          <input
+            type="checkbox"
+            checked={showFastDeliveryOnly}
+            onChange={() => dispatch({ type: "TOGGLE_DELIVERY" })}
+          ></input>
+          Fast Delivery Only
         </label>
       </fieldset>
       <div className="App" style={{ display: "flex", flexWrap: "wrap" }}>
