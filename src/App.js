@@ -4,7 +4,6 @@ import "./styles.css";
 import faker from "faker";
 
 faker.seed(123);
-
 const data = [...Array(50)].map((item) => ({
   id: faker.random.uuid(),
   name: faker.commerce.productName(),
@@ -66,7 +65,6 @@ export default function App() {
   //   return productList;
   // }
   // getSortedData(data, sortBy);
-
   const [
     { showInventoryAll, showFastDeliveryOnly, sortBy },
     dispatch
@@ -74,15 +72,16 @@ export default function App() {
     function reducer(state, action) {
       switch (action.type) {
         case "TOGGLE_INVENTORY":
-          return {
+          return (state = {
             ...state,
-            showInventoryAll: !showInventoryAll
-          };
+            showInventoryAll: !state.showInventoryAll
+          });
+
         case "TOGGLE_DELIVERY":
-          return {
+          return (state = {
             ...state,
-            showFastDeliveryOnly: !showFastDeliveryOnly
-          };
+            showFastDeliveryOnly: !state.showFastDeliveryOnly
+          });
         case "SORT":
           return {
             ...state,
@@ -93,6 +92,8 @@ export default function App() {
       }
     },
     {
+      showInventoryAll: true,
+      showFastDeliveryOnly: false,
       sortBy: null
     }
   );
@@ -105,14 +106,24 @@ export default function App() {
     if (sortBy && sortBy === "PRICE_LOW_TO_HIGH") {
       return productList.sort((a, b) => a["price"] - b["price"]);
     }
+    return productList;
   }
 
-  function getFilteredData(productList, { showInventoryAll, fastDelivery }) {}
+  function getFilteredData(
+    productList,
+    { showFastDeliveryOnly, showInventoryAll }
+  ) {
+    return productList
+      .filter(({ fastDelivery }) =>
+        showFastDeliveryOnly ? fastDelivery : true
+      )
+      .filter(({ inStock }) => (showInventoryAll ? true : inStock));
+  }
 
   const sortedData = getSortedData(data, sortBy);
   const filteredData = getFilteredData(sortedData, {
-    showInventoryAll,
-    showFastDeliveryOnly
+    showFastDeliveryOnly,
+    showInventoryAll
   });
 
   return (
@@ -126,6 +137,7 @@ export default function App() {
             onChange={() =>
               dispatch({ type: "SORT", payload: "PRICE_HIGH_TO_LOW" })
             }
+            checked={sortBy && sortBy === "PRICE_HIGH_TO_LOW"}
           ></input>{" "}
           Price-High to Low
         </label>
@@ -136,6 +148,7 @@ export default function App() {
             onChange={() =>
               dispatch({ type: "SORT", payload: "PRICE_LOW_TO_HIGH" })
             }
+            checked={sortBy && sortBy === "PRICE_LOW_TO_HIGH"}
           ></input>
           Price-Low to High
         </label>
@@ -161,7 +174,7 @@ export default function App() {
         </label>
       </fieldset>
       <div className="App" style={{ display: "flex", flexWrap: "wrap" }}>
-        {data.map(
+        {filteredData.map(
           ({
             id,
             name,
